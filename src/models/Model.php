@@ -46,22 +46,55 @@ class Model{
 
     public static function getResultSetFromSelect($filters =[] ,$columns = '*'){
         $sql = "SELECT {$columns} FROM " . static::$tableName . static::getFilters($filters);
-        
+       
         $result = Database::getResultFromQuery($sql);
         if($result->num_rows === 0){
             return null;
+            echo 'oi';
         }
         else{
             return $result;
+            
         }
+    }
+
+    public function insert(){
+        $sql = "INSERT INTO " . static::$tableName .  " (" . implode(",",static::$columns). ") VALUES (";
+        foreach(static::$columns as $col){
+            //this->$col pegando o nome da coluna e a partir do nome pega o atributo dentro do obj 
+            $sql .= static::getFormatedValue($this->$col). ",";
+        }
+        $sql[strlen($sql) -1] = ')';
+        $id = Database::executeSQL($sql);
+        $this->id = $id;
+    }
+
+    public function update(){
+        $sql = "UPDATE " . static::$tableName . " SET";
+        foreach(static::$columns as $col){
+            $sql .= " {$col} = " . static::getFormatedValue($this->$col). ",";
+        }
+
+        $sql[strlen($sql) -1] = ' ';
+        $sql .= "WHERE id = {$this->id}";
+        Database::executeSQL($sql);
     }
 
     private static function getFilters($filters){
         $sql = '';
+
         if(count($filters) > 0){
             $sql .= " WHERE 1 = 1";
-            foreach($filters as $columns => $value){
-                $sql .= " AND {$columns} = " . static::getFormatedValue($value);
+            foreach($filters as $column => $value){
+                if($column == "raw"){
+                    
+                    $sql .= " AND {$value}";
+                    
+                }
+                else{
+                    $sql .= " AND {$column} = " . static::getFormatedValue($value);
+                }
+                
             }
         }
         return $sql;
