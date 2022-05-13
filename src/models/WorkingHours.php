@@ -101,6 +101,49 @@ class WorkingHours  extends Model{
         }
     }
 
+    function getBalance(){
+        if(!$this->time1 && !isPastWorkday($this->work_date)) return '';
+
+        if($this->worked_time == DAILY_TIME) return '---';
+
+        $balance = $this->worked_time - DAILY_TIME;
+        $balanceString = getTimeStringFromSeconds(abs($balance));
+        $sign = $this->worked_time >= DAILY_TIME ? '+':'-';
+        return "{$sign}{$balanceString}";
+    }
+
+    public static function getAbsentUsers(){
+        $today = new DateTime();
+        $result = Database::getResultFromQUery("
+        SELECT name FROM users 
+        WHERE end_date is NULL
+        AND id NOT IN(
+            SELECT user_id FROM working_hours
+            WHERE work_date = '{$today->format('Y-m-d')}'
+            AND time1 IS NOT NULL
+        )
+        ");
+
+        $absentUsers = [];
+        if($result->num_rows > 0){
+           while($row = $result->fetch_assoc()){
+               array_push($absentUsers,$row['name']);
+           } 
+        }
+
+        return $absentUsers;
+    }
+
+    public static function getWorkedTimeInMoth($yearAndMonth){
+        $startDate = (new DateTime("{$yearAndMonth}-1"))->format('Y-m-d');
+        $endDate = getLastDayOfMonth($yearAndMonth)->format('Y-m-d');
+        $result = static::getResultSetFromSelect([
+            'raw' => "work_date BETWEEN '{$startDate}' AND '{$endDate}'"
+        ], "sum(worked_time) as sum");
+
+        return $result->fetch_assoc()['sum'];
+    }
+
     public static function getMonthlyReport($userId,$date){
         $registries = [];
         $startDate = getFirstDayOfMonth($date)->format('Y-m-d');
@@ -114,10 +157,11 @@ class WorkingHours  extends Model{
         if($result){
             while($row = $result->fetch_assoc()){
                $registries[$row['work_date']] = new WorkingHours($row);
+               
             }
         }
 
-        return $result;
+        return $registries;
     }
 
     private function getTimes(){

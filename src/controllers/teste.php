@@ -1,7 +1,5 @@
 <?php
 //Controller temporário!!
-
-print_r(getLastDayOfMonth('2019-10'));
-
+echo User::getCount(['id'=>3]);
 
 

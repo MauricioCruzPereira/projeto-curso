@@ -36,3 +36,20 @@ function getSecondsFromDateInterval($interval){
     $d2 = $d1->add($interval);
     return $d2->getTimestamp() - $d1->getTimestamp();
 }
+
+function isPastWorkday($date){
+    return !isWeekend($date) && isBefore($date, new DateTime());
+}
+
+function getTimeStringFroMSeconds($seconds){
+    $h = intdiv ($seconds, 3600);
+    $m = intdiv ($seconds % 3600, 60);
+    $s = $seconds - ($h * 3600) - ($m * 60);
+
+    return sprintf('%02d:%02d:%02d',$h,$m,$s);
+}
+
+function formatDateWithlocale($date,$pattern){
+    $time = getDateAsDateTime($date)->getTimestamp();
+    return strftime($pattern,$time);
+}

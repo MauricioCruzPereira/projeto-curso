@@ -5,6 +5,7 @@ setlocale(LC_TIME, 'pt_BR','pt_BR.utf-8','portuguese');
 
 //Constante gerais
 define('DAILY_TIME' , 60*60*8);
+error_reporting(~E_ALL);
 
 //Pastas
 define('MODEL_PATH', realpath(dirname(__FILE__).'/../models'));
