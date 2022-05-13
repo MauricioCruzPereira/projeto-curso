@@ -46,7 +46,6 @@ class Model{
 
     public static function getResultSetFromSelect($filters =[] ,$columns = '*'){
         $sql = "SELECT {$columns} FROM " . static::$tableName . static::getFilters($filters);
-       
         $result = Database::getResultFromQuery($sql);
         if($result->num_rows === 0){
             return null;
